@@ -38,10 +38,16 @@ func GetAllEvents() ([]Event, error) {
 	return events, nil
 }
 
-func GetSingleEvent(id int64) {
-	getSingleEventQuery := "SELECT * FROM evnets WHERE id = ?"
-
-	db.DB.Query(getSingleEventQuery)
+func GetSingleEvent(id int64) (*Event, error) {
+	getSingleEventQuery := "SELECT * FROM events WHERE id = ?"
+	row := db.DB.QueryRow(getSingleEventQuery, id)
+	var event Event
+	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.Time, &event.UserID)
+	if err != nil {
+		log.Fatalf("Error in maping rows items", err)
+		return nil, err
+	}
+	return &event, nil
 }
 
 func (e Event) SaveEvent() error {
@@ -61,5 +67,17 @@ func (e Event) SaveEvent() error {
 	}
 	id, err := result.LastInsertId()
 	e.ID = id
+	return err
+}
+
+func (e Event) UpdateEvent() error {
+	updateEventQuery := `UPDATE events SET name = ?, description = ?, location = ?, time = ? WHERE id = ?`
+	stmt, err := db.DB.Prepare(updateEventQuery)
+	if err != nil {
+		log.Fatalf("error in updating event", err)
+		return err
+	}
+	stmt.Exec(e.Name, e.Description, e.Location, e.Time, e.ID)
+	stmt.Close()
 	return err
 }
