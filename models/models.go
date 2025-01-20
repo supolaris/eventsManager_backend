@@ -77,7 +77,7 @@ func (e Event) UpdateEvent() error {
 		log.Fatalf("error in updating event", err)
 		return err
 	}
-	stmt.Exec(e.Name, e.Description, e.Location, e.Time, e.ID)
 	stmt.Close()
+	stmt.Exec(e.Name, e.Description, e.Location, e.Time, e.ID)
 	return err
 }
