@@ -10,7 +10,6 @@ import (
 
 func getEvents(ctx *gin.Context) {
 	events, err := models.GetAllEvents()
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error message": "internal server error get events",
@@ -104,6 +103,38 @@ func updateEvent(ctx *gin.Context) {
 	ctx.JSON(http.StatusBadRequest, gin.H{
 		"message":      "event updated",
 		"updatedEvent": updatedEvent,
+	})
+
+}
+
+func deleteEvent(ctx *gin.Context) {
+	eventId, err := strconv.ParseInt(ctx.Param("eventId"), 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error message": "error in parsing event id",
+		})
+		return
+	}
+
+	event, err := models.GetSingleEvent(eventId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error message": "event not exists",
+		})
+		return
+	}
+
+	err = event.DeleteEvent()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error message": "error in deleting event",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "event deleted successfully",
 	})
 
 }

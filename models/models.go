@@ -77,7 +77,20 @@ func (e Event) UpdateEvent() error {
 		log.Fatalf("error in updating event", err)
 		return err
 	}
-	stmt.Close()
+	defer stmt.Close()
 	stmt.Exec(e.Name, e.Description, e.Location, e.Time, e.ID)
+	return err
+}
+
+func (e Event) DeleteEvent() error {
+	deleteQuery := `DELETE FROM events WHERE id = ?`
+	stmt, err := db.DB.Prepare(deleteQuery)
+
+	if err != nil {
+		log.Fatalf("Error in preparing delete query", err)
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(e.ID)
 	return err
 }
