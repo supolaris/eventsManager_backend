@@ -2,6 +2,7 @@ package models
 
 import (
 	"basicapis/db"
+	"fmt"
 	"log"
 	"time"
 )
@@ -44,7 +45,8 @@ func GetSingleEvent(id int64) (*Event, error) {
 	var event Event
 	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.Time, &event.UserID)
 	if err != nil {
-		log.Fatalf("Error in maping rows items", err)
+		// log.Fatalf("Error in maping rows items", err)
+		fmt.Println("error in getting event please check id", err)
 		return nil, err
 	}
 	return &event, nil

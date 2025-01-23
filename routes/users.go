@@ -2,6 +2,7 @@ package routes
 
 import (
 	"basicapis/models"
+	"basicapis/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -45,12 +46,30 @@ func loginUser(ctx *gin.Context) {
 	var user models.User
 	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error message": "error in binding login user data",
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error message": "Could not parse requested data",
 		})
+		return
 	}
-	ctx.JSON(http.StatusInternalServerError, gin.H{
-		"message": "user loggedin successfully",
-		"users":   user,
+	err = user.ValidateUser()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error message": "Could not authenticate user",
+		})
+		return
+	}
+
+	token, err := utils.GenerateToken(user.Email, user.ID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error message": "Could not generate jwt token",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusBadRequest, gin.H{
+		"message": "User logged in successfully",
+		"token":   token,
 	})
+
 }

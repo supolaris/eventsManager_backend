@@ -3,6 +3,7 @@ package models
 import (
 	"basicapis/db"
 	"basicapis/utils"
+	"errors"
 	"log"
 )
 
@@ -57,11 +58,17 @@ func (u User) SaveUser() error {
 	return err
 }
 
-func (u User) ValidateUser() {
-	validateUserQuery := `SELECT * FROM users WHERE email = ?`
-
+func (u User) ValidateUser() error {
+	validateUserQuery := `SELECT id, password FROM users WHERE email = ?`
 	row := db.DB.QueryRow(validateUserQuery, u.Email)
-
-	row.Scan()
-
+	var retrivePassword string
+	err := row.Scan(&u.ID, &retrivePassword)
+	if err != nil {
+		return errors.New("user not found")
+	}
+	isValid := utils.CheckPasswordHash(u.Password, retrivePassword)
+	if !isValid {
+		return errors.New("password is not valid")
+	}
+	return nil
 }
